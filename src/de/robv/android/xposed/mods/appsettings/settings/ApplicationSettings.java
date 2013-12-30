@@ -116,15 +116,15 @@ public class ApplicationSettings extends Activity {
             }
         });
         
-        // Update DPI field
+        // Update Phys DPI field
         if (prefs.getBoolean(pkgName + Common.PREF_ACTIVE, false)) {
-        	((EditText) findViewById(R.id.txtDPI)).setText(String.valueOf(
-        		prefs.getInt(pkgName + Common.PREF_DPI, 0)));
+        	((EditText) findViewById(R.id.txtPhysDPI)).setText(String.valueOf(
+        		prefs.getFloat(pkgName + Common.PREF_PHYSDPI, 0)));
         } else {        
-        	((EditText) findViewById(R.id.txtDPI)).setText("0");
+        	((EditText) findViewById(R.id.txtPhysDPI)).setText("0");
         }
-        // Track changes to the DPI field to know if the settings were changed
-        ((EditText) findViewById(R.id.txtDPI)).addTextChangedListener(new TextWatcher() {
+        // Track changes to the Phys DPI field to know if the settings were changed
+        ((EditText) findViewById(R.id.txtPhysDPI)).addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
                 dirty = true;
@@ -137,91 +137,6 @@ public class ApplicationSettings extends Activity {
 			}
 		});
 
-		// Update Font Scaling field
-		if (prefs.getBoolean(pkgName + Common.PREF_ACTIVE, false)) {
-			((EditText) findViewById(R.id.txtFontScale)).setText(String.valueOf(prefs.getInt(pkgName + Common.PREF_FONT_SCALE, 100)));
-		} else {
-			((EditText) findViewById(R.id.txtFontScale)).setText("100");
-		}
-		// Track changes to the Font Scale field to know if the settings were changed
-		((EditText) findViewById(R.id.txtFontScale)).addTextChangedListener(new TextWatcher() {
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				dirty = true;
-			}
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-			@Override
-			public void afterTextChanged(Editable s) {
-			}
-		});
-
-        // Load and render current screen setting + possible options
-        int screen = prefs.getInt(pkgName + Common.PREF_SCREEN, 0);
-        if (screen < 0 || screen >= Common.swdp.length)
-        	screen = 0;
-        final int selectedScreen = screen;
-        
-		Spinner spnScreen = (Spinner) findViewById(R.id.spnScreen);
-		List<String> lstScreens = new ArrayList<String>(Common.swdp.length);
-		lstScreens.add(getString(R.string.settings_default));
-		for (int j = 1; j < Common.swdp.length; j++)
-			lstScreens.add(String.format("%dx%d", Common.wdp[j], Common.hdp[j]));
-		ArrayAdapter<String> screenAdapter = new ArrayAdapter<String>(this,
-			android.R.layout.simple_spinner_item, lstScreens);
-		screenAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spnScreen.setAdapter(screenAdapter);
-		spnScreen.setSelection(selectedScreen);
-		// Track changes to the screen to know if the settings were changed
-		spnScreen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-				if (pos != selectedScreen) {
-				    dirty = true;
-				}
-			}
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-        
-        
-        // Update Tablet field
-        ((CheckBox) findViewById(R.id.chkXlarge)).setChecked(prefs.getBoolean(pkgName + Common.PREF_XLARGE, false));
-		// Track changes to the Tablet checkbox to know if the settings were changed
-        ((CheckBox) findViewById(R.id.chkXlarge)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                dirty = true;
-            }
-        });
-		
-        
-        // Update Language and list of possibilities
-		localeList = new LocaleList(getString(R.string.settings_default));
-
-		Spinner spnLanguage = (Spinner) findViewById(R.id.spnLocale);
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-			android.R.layout.simple_spinner_item, localeList.getDescriptionList());
-		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spnLanguage.setAdapter(dataAdapter);
-		selectedLocalePos = localeList.getLocalePos(prefs.getString(pkgName + Common.PREF_LOCALE, null));
-		spnLanguage.setSelection(selectedLocalePos);
-		// Track changes to the language to know if the settings were changed
-		spnLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-				if (pos != selectedLocalePos) {
-				    dirty = true;
-				}
-			}
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-		
-		
 		// Helper to list all apk folders under /res
 		((Button) findViewById(R.id.btnListRes)).setOnClickListener(new View.OnClickListener() {
 			
@@ -270,168 +185,6 @@ public class ApplicationSettings extends Activity {
 		});
 		
 
-		// Setup fullscreen settings
-		{
-			int fullscreen;
-			try {
-				fullscreen = prefs.getInt(pkgName + Common.PREF_FULLSCREEN, Common.FULLSCREEN_DEFAULT);
-			} catch (ClassCastException ex) {
-				// Legacy boolean setting
-				fullscreen = prefs.getBoolean(pkgName + Common.PREF_FULLSCREEN, false)
-						? Common.FULLSCREEN_FORCE : Common.FULLSCREEN_DEFAULT;
-			}
-			final int fullscreenSelection = fullscreen;
-			Spinner spnFullscreen = (Spinner) findViewById(R.id.spnFullscreen);
-			// Note: the order of these items must match the Common.FULLSCREEN_... constants
-			String[] fullscreenArray;
-			if (Build.VERSION.SDK_INT >= 19) {
-				fullscreenArray = new String[] {
-						getString(R.string.settings_default),
-						getString(R.string.settings_force),
-						getString(R.string.settings_prevent),
-						getString(R.string.settings_immersive)
-				};
-			} else {
-				fullscreenArray = new String[] {
-						getString(R.string.settings_default),
-						getString(R.string.settings_force),
-						getString(R.string.settings_prevent)
-				};
-			}
-
-			List<String> lstFullscreen = Arrays.asList(fullscreenArray);
-			ArrayAdapter<String> fullscreenAdapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_spinner_item, lstFullscreen);
-			fullscreenAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			spnFullscreen.setAdapter(fullscreenAdapter);
-			spnFullscreen.setSelection(fullscreenSelection);
-			// Track changes to the fullscreen option to know if the settings were changed
-			spnFullscreen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-				@Override
-				public void onItemSelected(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-					if (pos != selectedScreen) {
-						dirty = true;
-					}
-				}
-				@Override
-				public void onNothingSelected(AdapterView<?> arg0) {
-				}
-			});
-		}
-
-		// Update No Title field
-		((CheckBox) findViewById(R.id.chkNoTitle)).setChecked(prefs.getBoolean(pkgName + Common.PREF_NO_TITLE, false));
-		// Track changes to the No Title checkbox to know if the settings were changed
-		((CheckBox) findViewById(R.id.chkNoTitle)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				dirty = true;
-			}
-		});
-
-		// Update Allow On Lockscreen field
-		((CheckBox) findViewById(R.id.chkAllowOnLockscreen)).setChecked(prefs.getBoolean(pkgName + Common.PREF_ALLOW_ON_LOCKSCREEN, false));
-		// Track changes to the Allow On Lockscreen checkbox to know if the settings were changed
-		((CheckBox) findViewById(R.id.chkAllowOnLockscreen)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				dirty = true;
-			}
-		});
-
-		// Update Screen On field
-		((CheckBox) findViewById(R.id.chkScreenOn)).setChecked(prefs.getBoolean(pkgName + Common.PREF_SCREEN_ON, false));
-		// Track changes to the Screen On checkbox to know if the settings were changed
-		((CheckBox) findViewById(R.id.chkScreenOn)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				dirty = true;
-			}
-		});
-
-        // Load and render current screen setting + possible options
-        int orientation = prefs.getInt(pkgName + Common.PREF_ORIENTATION, 0);
-		if (orientation < 0 || orientation >= Common.orientationCodes.length)
-			orientation = 0;
-		final int selectedOrientation = orientation;
-
-		Spinner spnOrientation = (Spinner) findViewById(R.id.spnOrientation);
-		List<String> lstOrientations = new ArrayList<String>(Common.orientationLabels.length);
-		for (int j = 0; j < Common.orientationLabels.length; j++)
-			lstOrientations.add(getString(Common.orientationLabels[j]));
-		ArrayAdapter<String> orientationAdapter = new ArrayAdapter<String>(this,
-			android.R.layout.simple_spinner_item, lstOrientations);
-		orientationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spnOrientation.setAdapter(orientationAdapter);
-		spnOrientation.setSelection(selectedOrientation);
-		// Track changes to the orientation to know if the settings were changed
-		spnOrientation.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-				if (pos != selectedOrientation) {
-				    dirty = true;
-				}
-			}
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-
-		// Setting for making the app resident in memory
-        ((CheckBox) findViewById(R.id.chkResident)).setChecked(prefs.getBoolean(pkgName + Common.PREF_RESIDENT, false));
-		// Track changes to know if the settings were changed
-        ((CheckBox) findViewById(R.id.chkResident)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                dirty = true;
-            }
-        });
-        
-		// Update No Big Notifications field
-		((CheckBox) findViewById(R.id.chkNoBigNotifications)).setChecked(prefs.getBoolean(pkgName + Common.PREF_NO_BIG_NOTIFICATIONS, false));
-		// Track changes to the No Big Notifications checkbox to know if the settings were changed
-		((CheckBox) findViewById(R.id.chkNoBigNotifications)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				dirty = true;
-			}
-		});
-
-        // Update Insistent Notifications field
-        ((CheckBox) findViewById(R.id.chkInsistentNotifications)).setChecked(prefs.getBoolean(pkgName + Common.PREF_INSISTENT_NOTIF, false));
-		// Track changes to the Insistent Notifications checkbox to know if the settings were changed
-        ((CheckBox) findViewById(R.id.chkInsistentNotifications)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                dirty = true;
-            }
-        });
-
-		// Setting for permissions revoking
-		allowRevoking = prefs.getBoolean(pkgName + Common.PREF_REVOKEPERMS, false);
-		disabledPermissions = prefs.getStringSet(pkgName + Common.PREF_REVOKELIST, new HashSet<String>());
-
-		Button btnPermissions = (Button) findViewById(R.id.btnPermissions);
-		btnPermissions.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// set up permissions editor
-				try {
-					final PermissionSettings permsDlg = new PermissionSettings(ApplicationSettings.this, pkgName, allowRevoking, disabledPermissions);
-					permsDlg.setOnOkListener(new PermissionSettings.OnDismissListener() {
-						@Override
-						public void onDismiss(PermissionSettings obj) {
-							dirty = true;
-							allowRevoking = permsDlg.getRevokeActive();
-							disabledPermissions.clear();
-							disabledPermissions.addAll(permsDlg.getDisabledPermissions());
-						}
-					});
-					permsDlg.display();
-				} catch (NameNotFoundException e) {
-				}
-			}
-		});
 	}
 
 
@@ -517,117 +270,20 @@ public class ApplicationSettings extends Activity {
             Editor prefsEditor = prefs.edit();
             if (swtActive.isChecked()) {
                 prefsEditor.putBoolean(pkgName + Common.PREF_ACTIVE, true);
-                int dpi;
+                float physDpi;
                 try {
-                	dpi = Integer.parseInt(((EditText) findViewById(R.id.txtDPI)).getText().toString());
+                	physDpi = Float.parseFloat(((EditText) findViewById(R.id.txtPhysDPI)).getText().toString());
                 } catch (Exception ex) {
-                	dpi = 0;
+                	physDpi = 0;
                 }
-                if (dpi != 0) {
-                    prefsEditor.putInt(pkgName + Common.PREF_DPI, dpi);
+                if (physDpi != 0) {
+                    prefsEditor.putInt(pkgName + Common.PREF_PHYSDPI, physDpi);
                 } else {
-                    prefsEditor.remove(pkgName + Common.PREF_DPI);
+                    prefsEditor.remove(pkgName + Common.PREF_PHYSDPI);
                 }
-				int fontScale;
-				try {
-					fontScale = Integer.parseInt(((EditText) findViewById(R.id.txtFontScale)).getText().toString());
-				} catch (Exception ex) {
-					fontScale = 0;
-				}
-				if (fontScale != 0 && fontScale != 100) {
-					prefsEditor.putInt(pkgName + Common.PREF_FONT_SCALE, fontScale);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_FONT_SCALE);
-				}
-                int screen = ((Spinner) findViewById(R.id.spnScreen)).getSelectedItemPosition();
-                if (screen > 0) {
-                    prefsEditor.putInt(pkgName + Common.PREF_SCREEN, screen);
-                } else {
-                	prefsEditor.remove(pkgName + Common.PREF_SCREEN);
-                }
-                if (((CheckBox) findViewById(R.id.chkXlarge)).isChecked()) {
-                    prefsEditor.putBoolean(pkgName + Common.PREF_XLARGE, true);
-                }  else {
-                    prefsEditor.remove(pkgName + Common.PREF_XLARGE);
-                }
-				selectedLocalePos = ((Spinner) findViewById(R.id.spnLocale)).getSelectedItemPosition();
-				if (selectedLocalePos > 0) {
-					prefsEditor.putString(pkgName + Common.PREF_LOCALE, localeList.getLocale(selectedLocalePos));
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_LOCALE);
-				}
-				int fullscreen = ((Spinner) findViewById(R.id.spnFullscreen)).getSelectedItemPosition();
-				if (fullscreen > 0) {
-					prefsEditor.putInt(pkgName + Common.PREF_FULLSCREEN, fullscreen);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_FULLSCREEN);
-				}
-				if (((CheckBox) findViewById(R.id.chkNoTitle)).isChecked()) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_NO_TITLE, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_NO_TITLE);
-				}
-				if (((CheckBox) findViewById(R.id.chkAllowOnLockscreen)).isChecked()) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_ALLOW_ON_LOCKSCREEN, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_ALLOW_ON_LOCKSCREEN);
-				}
-				if (((CheckBox) findViewById(R.id.chkScreenOn)).isChecked()) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_SCREEN_ON, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_SCREEN_ON);
-				}
-				int orientation = ((Spinner) findViewById(R.id.spnOrientation)).getSelectedItemPosition();
-				if (orientation > 0) {
-					prefsEditor.putInt(pkgName + Common.PREF_ORIENTATION, orientation);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_ORIENTATION);
-				}
-				if (((CheckBox) findViewById(R.id.chkResident)).isChecked()) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_RESIDENT, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_RESIDENT);
-				}
-				if (((CheckBox) findViewById(R.id.chkNoBigNotifications)).isChecked()) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_NO_BIG_NOTIFICATIONS, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_NO_BIG_NOTIFICATIONS);
-				}
-				if (((CheckBox) findViewById(R.id.chkInsistentNotifications)).isChecked()) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_INSISTENT_NOTIF, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_INSISTENT_NOTIF);
-				}
-				if (allowRevoking) {
-					prefsEditor.putBoolean(pkgName + Common.PREF_REVOKEPERMS, true);
-				} else {
-					prefsEditor.remove(pkgName + Common.PREF_REVOKEPERMS);
-				}
-                prefsEditor.remove(pkgName + Common.PREF_REVOKELIST);
-                if (disabledPermissions.size() > 0) {
-					// Commit and reopen the editor, as it seems to be bugged when updating a StringSet
-                    prefsEditor.commit();
-                    prefsEditor = prefs.edit();
-                    prefsEditor.putStringSet(pkgName + Common.PREF_REVOKELIST, disabledPermissions);
-                }
-                
+
             } else {
-                prefsEditor.remove(pkgName + Common.PREF_ACTIVE);
-                prefsEditor.remove(pkgName + Common.PREF_DPI);
-                prefsEditor.remove(pkgName + Common.PREF_FONT_SCALE);
-                prefsEditor.remove(pkgName + Common.PREF_SCREEN);
-                prefsEditor.remove(pkgName + Common.PREF_XLARGE);
-                prefsEditor.remove(pkgName + Common.PREF_LOCALE);
-                prefsEditor.remove(pkgName + Common.PREF_FULLSCREEN);
-                prefsEditor.remove(pkgName + Common.PREF_NO_TITLE);
-                prefsEditor.remove(pkgName + Common.PREF_ALLOW_ON_LOCKSCREEN);
-                prefsEditor.remove(pkgName + Common.PREF_SCREEN_ON);
-                prefsEditor.remove(pkgName + Common.PREF_ORIENTATION);
-                prefsEditor.remove(pkgName + Common.PREF_RESIDENT);
-                prefsEditor.remove(pkgName + Common.PREF_NO_BIG_NOTIFICATIONS);
-                prefsEditor.remove(pkgName + Common.PREF_INSISTENT_NOTIF);
-                prefsEditor.remove(pkgName + Common.PREF_REVOKEPERMS);
-                prefsEditor.remove(pkgName + Common.PREF_REVOKELIST);
+                prefsEditor.remove(pkgName + Common.PREF_PHYSDPI);
             }
             prefsEditor.commit();
             
