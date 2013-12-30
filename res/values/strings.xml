@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">App Settings</string>
-    <string name="app_mod_summary">Ability to set several generic configurations on a per-app basis:
-DPI; Font scale; Override loaded resouces; Locale;
-Fullscreen; No title; Keep screen on; Show above lockscreen;
-Resident in memory; Orientation; Insistent notifications; No big notifications; Revoke Permissions</string>
+    <string name="app_name">Tablet Mode</string>
+    <string name="app_mod_summary">Ability to fix (or spoof) the physical screen size reported to a particular app. On some apps this enables Tablet features.</string>
 
 
     <!-- Main screen -->
