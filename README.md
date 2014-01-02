@@ -1,4 +1,4 @@
-AppSettings
+TabletMode
 ===========
 
-A modification using the Xposed framework to change settings like density per app.
+A modification using the Xposed framework to change reported screen's physical DPI.
