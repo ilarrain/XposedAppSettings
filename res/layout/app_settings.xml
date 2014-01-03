@@ -58,7 +58,7 @@
                     android:layout_weight="1"
                     android:ems="3"
                     android:imeOptions="actionDone|flagNavigateNext"
-                    android:inputType="number"></EditText>
+                    android:inputType="numberDecimal"></EditText>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

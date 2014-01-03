@@ -2,7 +2,11 @@ package cl.ilarrain.xposed.tabletmode;
 
 
 import android.app.AndroidAppHelper;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.XResources;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.Display;
 
 import de.robv.android.xposed.IXposedHookCmdInit;
@@ -70,10 +74,44 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage,
                             setFloatField(mDisplayInfo, "physicalYDpi", packagePhysDPI);
                         }
                     }
-
-                    ;
                 });
             }
+        } catch (Throwable t) {
+            XposedBridge.log(t);
+        }
+        // Override settings used when loading resources
+        try {
+            findAndHookMethod(Resources.class, "updateConfiguration",
+                    Configuration.class, DisplayMetrics.class, "android.content.res.CompatibilityInfo",
+                    new XC_MethodHook() {
+
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            if (param.args[1] != null && param.thisObject instanceof XResources) {
+                                XResources res = ((XResources) param.thisObject);
+                                String packageName = res.getPackageName();
+                                String hostPackageName = AndroidAppHelper.currentPackageName();
+
+                                if (hostPackageName != null && isActive(hostPackageName)) {
+                                    float packagePhysDPI = prefs.getFloat(packageName + Common.PREF_PHYSDPI,
+                                            prefs.getFloat(Common.PREF_DEFAULT + Common.PREF_PHYSDPI, 0));
+                                    if (packagePhysDPI > 0) {
+                                        DisplayMetrics newMetrics;
+                                        if (param.args[1] != null) {
+                                            newMetrics = new DisplayMetrics();
+                                            newMetrics.setTo((DisplayMetrics) param.args[1]);
+                                        } else {
+                                            newMetrics = res.getDisplayMetrics();
+                                        }
+                                        newMetrics.xdpi = packagePhysDPI;
+                                        newMetrics.ydpi = packagePhysDPI;
+                                        param.args[1] = newMetrics;
+                                    }
+                                }
+                            }
+
+                        }
+                    });
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
