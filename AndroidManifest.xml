@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.robv.android.xposed.mods.tabletmode"
+    package="cl.ilarrain.xposed.tabletmode"
     android:versionCode="25"
     android:versionName="1.7.1"
     xmlns:tools="http://schemas.android.com/tools">
@@ -14,7 +14,7 @@
         android:name="cl.ilarrain.xposed.tabletmode.BROADCAST_PERMISSION"
         android:protectionLevel="dangerous"></permission>
 
-    <uses-permission android:name="de.robv.android.xposed.mods.tabletmode.BROADCAST_PERMISSION" />
+    <uses-permission android:name="cl.ilarrain.xposed.tabletmode.BROADCAST_PERMISSION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
