@@ -5,14 +5,14 @@ import android.app.AndroidAppHelper;
 import android.os.Build;
 import android.view.Display;
 
-import cl.ilarrain.xposed.tabletmode.hooks.Activities;
-import cl.ilarrain.xposed.tabletmode.hooks.PackagePermissions;
 import de.robv.android.xposed.IXposedHookCmdInit;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
@@ -49,8 +49,6 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage,
                             setFloatField(param.thisObject, "mDpiY", packagePhysDPI);
                         }
                     }
-
-                    ;
                 });
             } else {
                 findAndHookMethod(Display.class, "updateDisplayInfoLocked", new XC_MethodHook() {
@@ -79,10 +77,18 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage,
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
-
-        PackagePermissions.initHooks();
-        Activities.hookActivitySettings();
     }
+
+    @Override
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
+        prefs.reload();
+
+        if (this_package.equals(lpparam.packageName)) {
+            findAndHookMethod("cl.ilarrain.xposed.XposedModActivity",
+                    lpparam.classLoader, "isModActive", XC_MethodReplacement.returnConstant(true));
+        }
+    }
+
 
     @Override
     public void initCmdApp(de.robv.android.xposed.IXposedHookCmdInit.StartupParam startupParam) throws Throwable {

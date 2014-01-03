@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import cl.ilarrain.xposed.tabletmode.FilterItemComponent.FilterState;
 import cl.ilarrain.xposed.tabletmode.settings.ApplicationSettings;
 
+
 public class XposedModActivity extends Activity {
 
     private ArrayList<ApplicationInfo> appList = new ArrayList<ApplicationInfo>();
@@ -523,21 +524,6 @@ public class XposedModActivity extends Activity {
                 ((FilterItemComponent) filterDialog.findViewById(R.id.fltPhysDPI)).setEnabled(enable);
             }
         });
-
-        ((ImageButton) findViewById(R.id.btnPermsFilter)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                AlertDialog.Builder bld = new AlertDialog.Builder(XposedModActivity.this);
-                bld.setCancelable(true);
-
-                AlertDialog dialog = bld.create();
-                dialog.getListView().setFastScrollEnabled(true);
-
-                dialog.show();
-            }
-        });
-
     }
 
 
@@ -661,9 +647,8 @@ public class XposedModActivity extends Activity {
             filteredAppList = (ArrayList<ApplicationInfo>) results.values;
             adapter.notifyDataSetChanged();
             adapter.clear();
-            for (int i = 0, l = filteredAppList.size(); i < l; i++) {
-                adapter.add(filteredAppList.get(i));
-            }
+            for (ApplicationInfo filteredApp : filteredAppList)
+                adapter.add(filteredApp);
             adapter.notifyDataSetInvalidated();
         }
     }
